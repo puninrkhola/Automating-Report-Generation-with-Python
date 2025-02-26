@@ -1,0 +1,60 @@
+import csv
+from fpdf import FPDF
+
+# Step 1: Read Data from the CSV File
+file_path = r"C:\Users\khola\OneDrive\Desktop\codetech\ad_viz_plotval_data.csv"  # Update with your correct path
+
+data = []
+try:
+    with open(file_path, "r", encoding="utf-8") as file:
+        reader = csv.reader(file)
+        headers = next(reader)  # Extract column headers
+        for row in reader:
+            data.append(row)
+except FileNotFoundError:
+    print("Error: CSV file not found!")
+    exit()
+
+# Step 2: Create PDF Report
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(280, 10, "Air Pollution Report", ln=True, align="C")
+        self.ln(5)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 10)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
+
+pdf = PDF(orientation='L', unit='mm', format='A4')  # Landscape for wider tables
+pdf.set_auto_page_break(auto=True, margin=15)
+pdf.add_page()
+
+# Add Report Title
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, f"Total Records: {len(data)}", ln=True, align="C")
+pdf.ln(5)
+
+# Step 3: Define Column Widths & Table Structure
+pdf.set_font("Arial", "B", 8)  # Smaller font to fit columns properly
+
+# Adjust column widths (customize as needed)
+column_widths = [35, 25, 25, 20, 40, 20, 25, 40, 30, 30]  
+selected_headers = headers[:10]  # Display only first 10 columns
+
+# Print Headers with Borders & Proper Spacing
+for i, header in enumerate(selected_headers):
+    pdf.cell(column_widths[i], 10, header, border=1, align="C")
+pdf.ln()
+
+# Print Data (First 10 Rows) with Proper Spacing
+pdf.set_font("Arial", size=7)  # Smaller font to prevent overlapping
+for row in data[:10]:  # Display first 10 rows
+    for i, cell in enumerate(row[:10]):  # Limit to first 10 columns
+        pdf.cell(column_widths[i], 10, str(cell), border=1, align="C")
+    pdf.ln()
+
+# Step 4: Save PDF
+pdf.output("airpollution_report_final.pdf")
+print("✅ Report successfully generated as 'airpollution_report_final.pdf'!")
